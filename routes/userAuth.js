@@ -6,15 +6,10 @@ const UserAuth = (app, User) => {
     next();
   };
 
-  app.get('/nog', (req, res) => {
-    res.send('<h1> NOG </h1>');
-  });
-
   app.post('/signIn', middleWare, (req, res) => {
-    // res.json({
-    //   test: req.body.email,
-    // });
-    res.redirect('/nog');
+    res.json({
+      test: req.body.email,
+    });
 
     // Access Database
     User.find((err, users) => {
