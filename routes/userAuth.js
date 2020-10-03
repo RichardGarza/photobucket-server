@@ -13,11 +13,15 @@ const UserAuth = (app, User) => {
 
     // Access Database
     User.find((err, users) => {
-      err
-        ? console.log('Error Finding User')
-        : console.log(
-            'Found: ' + users.find(user => user.firstName === 'Bobbert').email
-          );
+      const foundUser = users.find(
+        user => user.firstName === 'Bobbert' && user.passwordHash
+      );
+
+      foundUser && !err
+        ? console.log('Found: ' + foundUser)
+        : err
+        ? console.log(`Error: ${err}`)
+        : console.log('No User Found');
     });
   });
 };

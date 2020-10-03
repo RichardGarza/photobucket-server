@@ -62,7 +62,7 @@ UserAuth(app, User);
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // //
-// // First, Define Schema.
+// First, Define Schema.
 // const userSchema = new mongoose.Schema({
 //   firstName: String,
 //   lastName: String,
@@ -73,13 +73,14 @@ UserAuth(app, User);
 // // Define Model Using Schema
 // const User = mongoose.model('User', userSchema);
 
-// // Instantiate Model
-// const bobby = new User({
-//   firstName: 'Bobbert',
-//   lastName: 'Bilchar',
-//   email: 'silence@silenc.io',
-//   password: 'mysecretpassword',
-// });
+// Instantiate Model
+const bobby = new User({
+  firstName: 'Bobbert',
+  lastName: 'Bilchar',
+  email: 'silence@silenc.io',
+  passwordHash: 'HASHHASHASH',
+  passwordSalt: 'SALTSALTSALT',
+});
 
 // // Save Model To DB
 // bobby.save(function (err, bobby) {
