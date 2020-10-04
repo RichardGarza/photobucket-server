@@ -7,6 +7,8 @@ module.exports = {
       email: String,
       passwordHash: String,
       passwordSalt: String,
+      sessionId: String,
+      sessionExpires: String,
     });
 
     // Define Model Using Schema
