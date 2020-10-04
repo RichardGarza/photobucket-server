@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const session = require('express-session');
 const flash = require('express-flash');
+const cors = require('cors');
 
 module.exports = {
   init(app) {
@@ -11,6 +12,7 @@ module.exports = {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(methodOverride('_method'));
+    app.use(cors());
     app.use(
       session({
         secret: process.env.cookieSecret,

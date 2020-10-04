@@ -8,9 +8,6 @@ const app = express();
 // Load Express Middleware + Start Server
 LoadMiddleware.init(app);
 
-// Import Routes
-const UserAuth = require('./routes/userAuth');
-
 // Load Database
 const mongoose = require('./config/connectDatabase');
 
@@ -20,8 +17,11 @@ const userModel = require('./models/userModel');
 // Initialize Models
 User = userModel.init(mongoose);
 
+// Import Routes
+const UserAuth = require('./routes/userAuth');
+
 // Utilize Routes
-UserAuth(app, User);
+UserAuth(app);
 
 // // Example For Using MongoDB
 // //
@@ -73,17 +73,32 @@ UserAuth(app, User);
 // // Define Model Using Schema
 // const User = mongoose.model('User', userSchema);
 
-// Instantiate Model
-const bobby = new User({
-  firstName: 'Bobbert',
-  lastName: 'Bilchar',
-  email: 'silence@silenc.io',
-  passwordHash: 'HASHHASHASH',
-  passwordSalt: 'SALTSALTSALT',
-});
+// // Instantiate Model
+// const bobby = new User({
+//   firstName: 'Bobbert',
+//   lastName: 'Bilchar',
+//   email: 'silence@silenc.io',
+//   passwordHash: 'HASHHASHASH',
+//   passwordSalt: 'SALTSALTSALT',
+// });
+
+// // Instantiate Model Using Hashed Password
+// const crypto = require('crypto');
+// const salt = 'Lawrys';
+// const hashedPassword = crypto
+//   .pbkdf2Sync('password', salt, 100000, 64, 'sha512')
+//   .toString('hex');
+
+// const woody = new User({
+//   firstName: 'Woody',
+//   lastName: 'Johnson',
+//   email: 'admin@secretsaucyness.com',
+//   passwordHash: hashedPassword,
+//   passwordSalt: salt,
+// });
 
 // // Save Model To DB
-// bobby.save(function (err, bobby) {
+// woody.save(function (err, bobby) {
 //   if (err) return console.error(err);
 //   console.log('Saved User', bobby);
 // });
