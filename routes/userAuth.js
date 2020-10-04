@@ -46,7 +46,7 @@ const signUp = (res, { email, password, firstName, lastName }) => {
       if (err) {
         res.json({ status: `Error Creating User` });
       } else {
-        res.json({ status: 'User Created Successfully' });
+        res.json({ status: 'User Created Successfully', user });
       }
       console.log('Saved User: ', user.email);
     });
