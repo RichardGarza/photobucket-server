@@ -4,12 +4,13 @@
   "description": "Node API for photobucket.",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
-    "dev": "nodemon index"
+    "start": "concurrently \"node index\" \"cd photobucket && npm start\"",
+    "dev": "concurrently \"nodemon index\" \"cd photobucket && npm start\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "concurrently": "^5.3.0",
     "cors": "^2.8.5",
     "dayjs": "^1.9.1",
     "dotenv": "^8.2.0",
