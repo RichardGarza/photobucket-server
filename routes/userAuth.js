@@ -1,26 +1,49 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const dayjs = require('dayjs');
-const { doesNotMatch } = require('assert');
 const User = require('mongoose').model('User');
 require('dotenv').config();
+const secret = process.env.cookieSecret;
+
+
 
 const middleWare = (req, res, next) => {
-  console.log('Middleware');
 
-  const { userIdCookie, sessionIdCookie } = req.body;
-  if (userIdCookie && sessionIdCookie) {
-    const now = dayjs().$d.toString();
+  const  { body } = req;
 
-    User.findOne({ _id: userIdCookie }, (err, foundUser) => {
-      const { sessionId, sessionExpires } = foundUser;
-      sessionIdCookie === sessionId && sessionExpires > now
-        ? console.log('Session Valid ')
-        : console.log('Session Expired');
-    });
-  }
+if (body.token) 
 
+  {  const  { token } = body;
+  
+    console.log('Token Received: ' , token);
+   
+
+    const verified = jwt.verify(token, secret);
+    
+    const response = {verified, token};
+    console.log('Verified:  ' , response);
+
+    req.body.verified = verified;
+    next();
+} else {
   next();
+}
+
+
+  // const { userIdCookie, sessionIdCookie } = req.body;
+  // if (userIdCookie && sessionIdCookie) {
+    // const now = dayjs().$d.toString();
+
+    // User.findOne({ _id: userIdCookie }, (err, foundUser) => {
+    //   const { sessionId, sessionExpires } = foundUser;
+    //   sessionIdCookie === sessionId && sessionExpires > now
+    //     ? console.log('Session Valid ')
+    //     : console.log('Session Expired');
+    // });
+  // }
+
+  
 };
 
 const hash = (password, salt) => {
@@ -77,64 +100,99 @@ const signUp = (res, { email, password, firstName, lastName }) => {
 
 const UserAuth = app => {
   app.post('/signIn', middleWare, (req, res) => {
-    const { email, password, userIdCookie } = req.body;
 
-    if (userIdCookie) {
-      console.log('UserIdCookie', userIdCookie);
-      User.findOne({ _id: userIdCookie }, (err, foundUser) => {
-        if (err) {
-          console.log('Errrrrrr', err);
-          res.json({
-            status: `Error: ${err}`,
-          });
-        } else if (foundUser) {
-          console.log('This one', foundUser._id);
-          res.json({
-            status: 'Verified with UserId Cookie',
-            userId: foundUser._id,
-            userEmail: foundUser.email,
-          });
-        } else {
-          console.log('EMAIL VERIFICATION', email);
-          User.findOne({ email: email }, (err, foundUser) => {
-            console.log('found User?', foundUser);
-            const { passwordHash, passwordSalt } = foundUser;
+const  { body } = req;
+const  { userId, userRole } = body;
 
-            // Then Verify Password
-            if (verifyPassword(passwordHash, passwordSalt, password)) {
-              res.json({
-                status: 'Cookie Invalid, Verified With Password',
-                userId: foundUser._id,
-                userEmail: foundUser.email,
-              });
-            } else {
-              res.json({ status: 'User Not Found' });
-            }
-          });
-        }
-      });
-    } else {
-      User.find((err, users) => {
-        console.log;
-        const foundUser = users.find(user => user.email === email);
 
-        if (foundUser && !err) {
-          const { passwordHash, passwordSalt, firstName, lastName } = foundUser;
+if (body.verified) 
 
-          // Then Verify Password
-          verifyPassword(passwordHash, passwordSalt, password)
-            ? res.json({
-                status: 'No Cookie, Verified By Email',
-                userId: foundUser._id,
-              })
-            : res.json({ status: 'Not Verified' });
-        } else {
-          err
-            ? res.json({ status: `Error: ${err}` })
-            : res.json({ status: 'No User Found' });
-        }
-      });
-    }
+  {  
+    const  { verified, token } = req.body;
+    
+    const response = {verified, token};
+    console.log('verified by middleware!!', response);
+
+    res.json(response);
+
+} else {
+    const payload = {
+      userId,
+      userRole
+    };
+
+    console.log('Signed In', payload);
+
+    
+
+    const token = jwt.sign(payload, secret, { expiresIn: 60  }, (err, token) => {
+      const response = {body, token};
+
+          res.json(response);
+    });
+    
+
+    
+  }
+    // const { email, password, userIdCookie } = req.body;
+    // console.log('WE MADE IT' , req.body);
+
+    // if (userIdCookie) {
+    //   console.log('UserIdCookie', userIdCookie);
+    //   User.findOne({ _id: userIdCookie }, (err, foundUser) => {
+    //     if (err) {
+    //       console.log('Errrrrrr', err);
+    //       res.json({
+    //         status: `Error: ${err}`,
+    //       });
+    //     } else if (foundUser) {
+    //       console.log('This one', foundUser._id);
+    //       res.json({
+    //         status: 'Verified with UserId Cookie',
+    //         userId: foundUser._id,
+    //         userEmail: foundUser.email,
+    //       });
+    //     } else {
+    //       console.log('EMAIL VERIFICATION', email);
+    //       User.findOne({ email: email }, (err, foundUser) => {
+    //         console.log('found User?', foundUser);
+    //         const { passwordHash, passwordSalt } = foundUser;
+
+    //         // Then Verify Password
+    //         if (verifyPassword(passwordHash, passwordSalt, password)) {
+    //           res.json({
+    //             status: 'Cookie Invalid, Verified With Password',
+    //             userId: foundUser._id,
+    //             userEmail: foundUser.email,
+    //           });
+    //         } else {
+    //           res.json({ status: 'User Not Found' });
+    //         }
+    //       });
+    //     }
+    //   });
+    // } else {
+    //   User.find((err, users) => {
+    //     console.log;
+    //     const foundUser = users.find(user => user.email === email);
+
+    //     if (foundUser && !err) {
+    //       const { passwordHash, passwordSalt, firstName, lastName } = foundUser;
+
+    //       // Then Verify Password
+    //       verifyPassword(passwordHash, passwordSalt, password)
+    //         ? res.json({
+    //             status: 'No Cookie, Verified By Email',
+    //             userId: foundUser._id,
+    //           })
+    //         : res.json({ status: 'Not Verified' });
+    //     } else {
+    //       err
+    //         ? res.json({ status: `Error: ${err}` })
+    //         : res.json({ status: 'No User Found' });
+    //     }
+    //   });
+    // }
   });
 
   app.post('/signUp', middleWare, (req, res) => {
