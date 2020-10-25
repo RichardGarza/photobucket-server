@@ -6,44 +6,46 @@ const User = require('mongoose').model('User');
 require('dotenv').config();
 const secret = process.env.cookieSecret;
 
-
-
 const middleWare = (req, res, next) => {
+  const { body } = req;
 
-  const  { body } = req;
+  if (body.token) {
+    const { token } = body;
 
-if (body.token) 
+    console.log('Token Received: ', token);
 
-  {  const  { token } = body;
-  
-    console.log('Token Received: ' , token);
-   
+    // let verified;
 
-    const verified = jwt.verify(token, secret);
-    
-    const response = {verified, token};
-    console.log('Verified:  ' , response);
+    jwt.verify(token, secret, (err, decoded) => {
+      if (err) {
+        req.body.error = err;
+        console.log('ERROR: ', err.name, err.message);
+      } else {
+        req.body.verified = decoded;
+        console.log('decoded: ', decoded);
+      }
+    });
 
-    req.body.verified = verified;
+    // const response = { verified, token };
+    // console.log('Verified:  ', response.verified);
+
+    // req.body.verified = verified;
     next();
-} else {
-  next();
-}
-
+  } else {
+    next();
+  }
 
   // const { userIdCookie, sessionIdCookie } = req.body;
   // if (userIdCookie && sessionIdCookie) {
-    // const now = dayjs().$d.toString();
+  // const now = dayjs().$d.toString();
 
-    // User.findOne({ _id: userIdCookie }, (err, foundUser) => {
-    //   const { sessionId, sessionExpires } = foundUser;
-    //   sessionIdCookie === sessionId && sessionExpires > now
-    //     ? console.log('Session Valid ')
-    //     : console.log('Session Expired');
-    // });
+  // User.findOne({ _id: userIdCookie }, (err, foundUser) => {
+  //   const { sessionId, sessionExpires } = foundUser;
+  //   sessionIdCookie === sessionId && sessionExpires > now
+  //     ? console.log('Session Valid ')
+  //     : console.log('Session Expired');
+  // });
   // }
-
-  
 };
 
 const hash = (password, salt) => {
@@ -52,15 +54,17 @@ const hash = (password, salt) => {
     .toString('hex');
 };
 
-const verifyPassword = (passwordHash, passwordSalt, password) => {
-  const newHash = hash(password, passwordSalt);
+// const verifyPassword = (passwordHash, passwordSalt, password) => {
+//   const newHash = hash(password, passwordSalt);
 
-  if (passwordHash === newHash) {
-    return true;
-  } else {
-    return false;
-  }
-};
+//   if (passwordHash === newHash) {
+//     return true;
+//   } else {
+//     return false;
+//   }
+// };
+
+//////////// SIGN UP ///////////////////////////////////////////////////////////////
 
 const signUp = (res, { email, password, firstName, lastName }) => {
   console.log('SignUp UserAuth');
@@ -98,42 +102,53 @@ const signUp = (res, { email, password, firstName, lastName }) => {
   }
 };
 
+//////////// SIGN IN ///////////////////////////////////////////////////////////////
+
 const UserAuth = app => {
   app.post('/signIn', middleWare, (req, res) => {
+    const { body } = req;
+    const { userId, userRole, error } = body;
+    let response;
 
-const  { body } = req;
-const  { userId, userRole } = body;
+    if (body.verified) {
+      const { verified, token } = body;
 
+      response = { verified, token };
+      console.log('Verified by middleware!!', response);
+      res.json(response);
+    } else if (error) {
+      console.log('ERROR??');
+      response = {
+        verified: 'NO',
+        ErrorName: error.name,
+        ErrorMessage: error.message,
+      };
+      res.json(response);
+    } else if (userId && userRole) {
+      console.log('ThisOnee');
+      const payload = {
+        userId,
+        userRole,
+      };
 
-if (body.verified) 
+      const token = jwt.sign(payload, secret, { expiresIn: 120 });
+      response = { verified: 'Yes', body, token };
+      res.json(response);
+    } else {
+      console.log('FARTNOISES');
+      response = {
+        verified: 'NO',
+        ErrorName: 'Missing User Info or Token',
+        Received: {
+          userId: userId,
+          userRole: userRole,
+          token: body.token,
+        },
+      };
+      res.json(response);
+    }
+    console.log('RESPONSE: ', response);
 
-  {  
-    const  { verified, token } = req.body;
-    
-    const response = {verified, token};
-    console.log('verified by middleware!!', response);
-
-    res.json(response);
-
-} else {
-    const payload = {
-      userId,
-      userRole
-    };
-
-    console.log('Signed In', payload);
-
-    
-
-    const token = jwt.sign(payload, secret, { expiresIn: 60  }, (err, token) => {
-      const response = {body, token};
-
-          res.json(response);
-    });
-    
-
-    
-  }
     // const { email, password, userIdCookie } = req.body;
     // console.log('WE MADE IT' , req.body);
 
