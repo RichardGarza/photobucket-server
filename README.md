@@ -19,4 +19,10 @@ The backend API uses Node.js, Express.js, Passport.js, & MongoDB.
 
 In this project's directory, you can run:
 
-`npm start` or `npm run dev`
+`npm start` to run the application.
+or
+`npm run dev` to run the application with nodemon which will restart the server if any changes are made.
+
+Then, ONCE SERVER IS RUNNING,
+open a new terminal and run:
+`npm run test`
